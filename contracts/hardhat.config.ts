@@ -12,31 +12,31 @@ import { ethers } from "ethers";
 // Load environment variables.
 dotenv.config();
 
-const argv : any = yargs
-    .option("network", {
-        type: "string",
-        default: "hardhat",
-    })
-    .help(false)
-    .version(false).argv;
+const argv: any = yargs
+  .option("network", {
+    type: "string",
+    default: "hardhat",
+  })
+  .help(false)
+  .version(false).argv;
 
-const { NODE_URL, MNEMONIC, INFURA_KEY, ETHERSCAN_API_KEY} = process.env;
+const { NODE_URL, MNEMONIC, INFURA_KEY, ETHERSCAN_API_KEY } = process.env;
 
 import "./src/tasks/test_registry"
 
 const deterministicDeployment = (network: string): DeterministicDeploymentInfo => {
   const info = getSingletonFactoryInfo(parseInt(network));
   if (!info) {
-      throw new Error(`
+    throw new Error(`
       Safe factory not found for network ${network}. You can request a new deployment at https://github.com/safe-global/safe-singleton-factory.
       For more information, see https://github.com/safe-global/safe-contracts#replay-protection-eip-155
     `);
   }
   return {
-      factory: info.address,
-      deployer: info.signerAddress,
-      funding: (ethers.toBigInt(info.gasLimit) * (ethers.toBigInt(info.gasPrice))).toString(),
-      signedTx: info.transaction,
+    factory: info.address,
+    deployer: info.signerAddress,
+    funding: (ethers.toBigInt(info.gasLimit) * (ethers.toBigInt(info.gasPrice))).toString(),
+    signedTx: info.transaction,
   };
 };
 
@@ -79,7 +79,12 @@ const config: HardhatUserConfig = {
     gnosis: {
       ...sharedNetworkConfig,
       url: "https://rpc.gnosischain.com",
-    }
+    },
+    scrollSepolia: {
+      ...sharedNetworkConfig,
+      url: "https://sepolia-rpc.scroll.io" || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   deterministicDeployment,
   etherscan: {
@@ -97,8 +102,8 @@ const config: HardhatUserConfig = {
 
 if (NODE_URL) {
   config.networks!.custom = {
-      ...sharedNetworkConfig,
-      url: NODE_URL,
+    ...sharedNetworkConfig,
+    url: NODE_URL,
   };
 }
 
